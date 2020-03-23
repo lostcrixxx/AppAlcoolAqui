@@ -4,29 +4,34 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import br.com.envolvedesenvolve.alcoolaqui.model.Product;
 import br.com.envolvedesenvolve.alcoolaqui.model.User;
 
 /**
  * Created by Cristiano M. on 21/03/2020
+ * modifield by Cristiano M. on 22/03/2020
  */
-public class ProductTable extends HelperDB{
+
+public class ProductTable extends HelperDB {
     private static final String TAG = "ProductTable";
 
-    public static final String TABLE_USER = "product";
+    public static final String TABLE_NAME = "product";
     public static final String COLUMN_ID = "id";
+    public static final String COLUMN_FK_USER = "fk_user";
     public static final String COLUMN_NOME = "nome";
-    public static final String COLUMN_EMAIL = "email";
-    public static final String COLUMN_SENHA = "senha";
-    public static final String COLUMN_IMEI = "imei";
+    public static final String COLUMN_PORCENT = "porcent";
+    public static final String COLUMN_TAMANHO = "tamanho";
+    public static final String COLUMN_VALOR = "valor";
+    public static final String COLUMN_TITLE_LOCAL = "title_local";
+    public static final String COLUMN_ENDERECO = "endereco";
     public static final String COLUMN_DT_INC = "dt_inc";
-    public static final String COLUMN_DT_UPD = "dt_upd";
-
-//    private SQLiteOpenHelper dbHelper;
 
     public ProductTable(Context context) {
         super(context);
@@ -34,15 +39,17 @@ public class ProductTable extends HelperDB{
 
     // Database creation SQL statement
     public static final String DATABASE_CREATE = "CREATE TABLE IF NOT EXISTS "
-            + TABLE_USER
+            + TABLE_NAME
             + "("
-            + COLUMN_ID + " integer PRIMARY KEY AUTOINCREMENT, "
-            + COLUMN_NOME + " text, "
-            + COLUMN_EMAIL + " text NOT NULL, "
-            + COLUMN_SENHA + " text NOT NULL, "
-            + COLUMN_IMEI + " integer, "
-            + COLUMN_DT_INC + " text , " // NOT NULL
-            + COLUMN_DT_UPD + " text"
+            + COLUMN_ID + " integer PRIMARY KEY, "
+            + COLUMN_FK_USER + " text, "
+            + COLUMN_NOME + " text NOT NULL, "
+            + COLUMN_PORCENT + " text NOT NULL, "
+            + COLUMN_TAMANHO + " integer, "
+            + COLUMN_VALOR + " text, " // NOT NULL
+            + COLUMN_TITLE_LOCAL + " text, "
+            + COLUMN_ENDERECO + " text, "
+            + COLUMN_DT_INC + " text" // NOT NULL
             + ");";
 
     private final List<String> tableColumns = Arrays.asList(COLUMN_ID);
@@ -52,14 +59,14 @@ public class ProductTable extends HelperDB{
     }
 
     public static String getName() {
-        return TABLE_USER;
+        return TABLE_NAME;
     }
 
     public List<String> getAllNotes() {
         List<String> notes = new ArrayList<>();
 
         // Select All Query
-        String selectQuery = "SELECT * FROM " + TABLE_USER;
+        String selectQuery = "SELECT * FROM " + TABLE_NAME;
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -81,11 +88,11 @@ public class ProductTable extends HelperDB{
         return notes;
     }
 
-    public ArrayList<User> getAllUsers() {
-        ArrayList<User> notes = new ArrayList<>();
+    public ArrayList<Product> getAllProds() {
+        ArrayList<Product> prodList = new ArrayList<>();
 
         // Select All Query
-        String selectQuery = "SELECT * FROM " + TABLE_USER;
+        String selectQuery = "SELECT * FROM " + TABLE_NAME;
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -93,25 +100,32 @@ public class ProductTable extends HelperDB{
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                User user = new User();
-                user.setId(cursor.getInt(cursor.getColumnIndex(ProductTable.COLUMN_ID)));
-                user.setNome(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_NOME)));
-                user.setEmail(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_EMAIL)));
-                user.setSenha(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_SENHA)));
-                user.setImei(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_IMEI)));
-                user.setDt_inc(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_DT_INC)));
-                user.setDt_upd(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_DT_UPD)));
+                Product prod = new Product();
+                prod.setId(cursor.getInt(cursor.getColumnIndex(ProductTable.COLUMN_ID)));
+                prod.setFk_user(cursor.getInt(cursor.getColumnIndex(ProductTable.COLUMN_FK_USER)));
+                prod.setNome(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_NOME)));
+                prod.setPorcent(cursor.getFloat(cursor.getColumnIndex(ProductTable.COLUMN_PORCENT)));
+                prod.setTamanho(cursor.getFloat(cursor.getColumnIndex(ProductTable.COLUMN_TAMANHO)));
+                prod.setValor(cursor.getFloat(cursor.getColumnIndex(ProductTable.COLUMN_VALOR)));
+                prod.setTitleLocal(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_TITLE_LOCAL)));
+                prod.setEndereco(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_ENDERECO)));
+                prod.setDt_inc(cursor.getString(cursor.getColumnIndex(ProductTable.COLUMN_DT_INC)));
 
-                notes.add(user);
+                prodList.add(prod);
 
             } while (cursor.moveToNext());
         }
 
         db.close(); // close db connection
-        return notes;
+        return prodList;
     }
 
-    public void setValuesDatabase(ContentValues cv) {
-        insertValueOnTable(TABLE_USER, cv);
+    public void setValuesDatabase(Context context, ContentValues cv) {
+        boolean resp = insertValueOnTable(TABLE_NAME, cv);
+        if(resp){
+            Log.i(TAG, "Produto cadastrado!");
+        } else {
+            Log.i(TAG, "ERRO produto não cadastrado");
+        }
     }
 }

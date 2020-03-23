@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +16,9 @@ import br.com.envolvedesenvolve.alcoolaqui.model.User;
 
 /**
  * Created by Cristiano M. on 21/03/2020
+ * modifield by Cristiano M. on 22/03/2020
  */
+
 public class MarksTable extends HelperDB{
     private static final String TAG = "MarksTable";
 
@@ -48,8 +52,8 @@ public class MarksTable extends HelperDB{
         return TABLE_NAME;
     }
 
-    public List<String> getAllNotes() {
-        List<String> notes = new ArrayList<>();
+    public ArrayList<Marks> getAllMarks() {
+        ArrayList<Marks> notes = new ArrayList<>();
 
         // Select All Query
         String selectQuery = "SELECT * FROM " + TABLE_NAME;
@@ -60,12 +64,13 @@ public class MarksTable extends HelperDB{
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-//                Note note = new Note();
-//                notes.setId(cursor.getInt(cursor.getColumnIndex(MarksTable.COLUMN_ID)));
-                notes.add(cursor.getString(0));
-                notes.add(cursor.getString(1));
-                notes.add(cursor.getString(2));
-                notes.add(cursor.getString(3));
+                Marks prod = new Marks();
+                prod.setId(cursor.getInt(cursor.getColumnIndex(MarksTable.COLUMN_ID)));
+                prod.setFk_product(cursor.getInt(cursor.getColumnIndex(MarksTable.COLUMN_FK_PRODUCT)));
+                prod.setLat(cursor.getDouble(cursor.getColumnIndex(MarksTable.COLUMN_LAT)));
+                prod.setLon(cursor.getDouble(cursor.getColumnIndex(MarksTable.COLUMN_LON)));
+
+                notes.add(prod);
 
             } while (cursor.moveToNext());
         }
@@ -101,7 +106,12 @@ public class MarksTable extends HelperDB{
         return notes;
     }
 
-    public void setValuesDatabase(ContentValues cv) {
-        insertValueOnTable(TABLE_NAME, cv);
+    public void setValuesDatabase(Context context, ContentValues cv) {
+        boolean resp = insertValueOnTable(TABLE_NAME, cv);
+        if(resp){
+            Log.i(TAG, "Localização cadastrada!");
+        } else {
+            Log.i(TAG, "ERRO localização não cadastrada");
+        }
     }
 }

@@ -1,6 +1,9 @@
 package br.com.envolvedesenvolve.alcoolaqui.model;
 
 import android.content.ContentValues;
+import android.content.Context;
+
+import java.util.ArrayList;
 
 import br.com.envolvedesenvolve.alcoolaqui.db.UserTable;
 
@@ -70,13 +73,18 @@ public class User {
         this.dt_upd = dt_upd;
     }
 
-    public ContentValues getContentValues() {
-        ContentValues cv = new ContentValues();
-        cv.put(UserTable.COLUMN_ID, this.getId());
-        cv.put(UserTable.COLUMN_NOME, this.getNome());
-        cv.put(UserTable.COLUMN_EMAIL, this.getEmail());
-        cv.put(UserTable.COLUMN_SENHA, this.getSenha());
+    public void setInsert(Context context, ArrayList<User> prodList){
+        ContentValues cv;
+        UserTable table = new UserTable(context);
 
-        return cv;
+        for(User userLine : prodList){
+            cv = new ContentValues();
+            cv.put(UserTable.COLUMN_ID, userLine.getId());
+            cv.put(UserTable.COLUMN_NOME, userLine.getNome());
+            cv.put(UserTable.COLUMN_EMAIL, userLine.getEmail());
+            cv.put(UserTable.COLUMN_SENHA, userLine.getSenha());
+
+            table.setValuesDatabase(context, cv);
+        }
     }
 }

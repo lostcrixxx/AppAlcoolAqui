@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,8 +29,6 @@ public class UserTable extends HelperDB{
     public static final String COLUMN_DT_INC = "dt_inc";
     public static final String COLUMN_DT_UPD = "dt_upd";
 
-//    private SQLiteOpenHelper dbHelper;
-
     public UserTable(Context context) {
         super(context);
     }
@@ -44,7 +43,7 @@ public class UserTable extends HelperDB{
             + COLUMN_SENHA + " text NOT NULL, "
             + COLUMN_IMEI + " integer, "
             + COLUMN_DT_INC + " text , " // todo NOT NULL
-            + COLUMN_DT_UPD + " text"
+            + COLUMN_DT_UPD + " text "
             + ");";
 
     private final List<String> tableColumns = Arrays.asList(COLUMN_ID);
@@ -113,7 +112,12 @@ public class UserTable extends HelperDB{
         return notes;
     }
 
-    public void setValuesDatabase(ContentValues cv) {
-        insertValueOnTable(TABLE_NAME, cv);
+    public void setValuesDatabase(Context context, ContentValues cv) {
+        boolean resp = insertValueOnTable(TABLE_NAME, cv);
+        if(resp){
+            Log.i(TAG, "Usuario cadastrado!");
+        } else {
+            Log.i(TAG, "ERRO usuario não cadastrado");
+        }
     }
 }

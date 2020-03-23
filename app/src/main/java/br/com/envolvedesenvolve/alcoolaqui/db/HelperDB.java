@@ -2,16 +2,22 @@ package br.com.envolvedesenvolve.alcoolaqui.db;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import br.com.envolvedesenvolve.alcoolaqui.model.User;
-
 public class HelperDB extends SQLiteOpenHelper {
 
     private static final String TAG = "database";
+
+    static HelperDB mDbHelper;
+
+    public static synchronized HelperDB getInstance(Context context) {
+        if (mDbHelper == null) {
+            mDbHelper = new HelperDB(context);
+        }
+        return mDbHelper;
+    }
 
     public HelperDB(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -25,9 +31,15 @@ public class HelperDB extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        Log.e(TAG, "Criando as tabelas");
         db.execSQL(UserTable.DATABASE_CREATE);
         db.execSQL(ProductTable.DATABASE_CREATE);
         db.execSQL(MarksTable.DATABASE_CREATE);
+
+//        db.execSQL("insert into users (id,nome,email,senha)"
+//                + "values(0,'Teste','teste@teste.com.br','123') ;");
+//        db.execSQL("insert into product (id,nome,porcent,valor,dt_inc)"
+//                + "values(0,'Álcool','70',0,00/00/0000) ;");
     }
 
     @Override
@@ -40,8 +52,9 @@ public class HelperDB extends SQLiteOpenHelper {
     }
 
     public boolean insertValueOnTable(String table, ContentValues values) {
+        Log.e(TAG, "Inserindo nas tabelas");
 //        values.put("dt_inc", mFormat.format(new Date()));
-        values.remove("id");
+//        values.remove("id");
         SQLiteDatabase db = this.getWritableDatabase();
         long result = db.insert(table, null, values);
         if (result == -1)
