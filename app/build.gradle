@@ -7,8 +7,8 @@ android {
         applicationId "br.com.envolvedesenvolve.alcoolaqui"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 7
-        versionName '0.0.7'
+        versionCode 11
+        versionName '0.0.11'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -37,6 +37,9 @@ dependencies {
 
     // rest
     implementation 'com.android.volley:volley:1.1.1'
+
+    // convert Json
+    implementation "com.google.code.gson:gson:2.8.5"
 
     // spinner
 //    implementation 'com.github.MdFarhanRaja:SearchableSpinner:2.0'

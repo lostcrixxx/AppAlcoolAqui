@@ -1,17 +1,26 @@
 <resources>
     <string name="app_name">Álcool Aqui</string>
+
     <string name="open_drawer">Open navigation drawer</string>
     <string name="close_drawer">Close navigation drawer</string>
     <string name="nav_header_title">App Álcool Aqui</string>
     <string name="nav_header_subtitle">contato.alcoolaqui@outlook.com.br</string>
     <string name="nav_header_desc">Navigation header</string>
+
+    <string name="action_cancel">Cancelar</string>
     <string name="action_settings">Sair</string>
 
-    <string name="menu_home">Mapa</string>
     <string name="menu_add_user">Cadastrar</string>
+    <string name="menu_home">Mapa</string>
     <string name="menu_add_mark">Adicionar Local</string>
+    <string name="menu_logout">Trocar de Usuário</string>
+    <string name="menu_share">Compartilhar</string>
     <string name="menu_tools">Configurações</string>
     <string name="menu_sobre">Sobre</string>
     <string name="menu_sair">Sair</string>
+
+    <string name="quit_dialog_title">Sair do aplicativo</string>
+    <string name="quit_dialog_message">Tem certeza que deseja sair do aplicativo ?</string>
+    <string name="quit_dialog_button_title">Sair</string>
 
 </resources>

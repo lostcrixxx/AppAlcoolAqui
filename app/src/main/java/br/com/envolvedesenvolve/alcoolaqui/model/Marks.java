@@ -3,6 +3,8 @@ package br.com.envolvedesenvolve.alcoolaqui.model;
 import android.content.ContentValues;
 import android.content.Context;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 
 import br.com.envolvedesenvolve.alcoolaqui.db.MarksTable;
@@ -14,6 +16,7 @@ public class Marks {
     private int fk_product;
     private double lat;
     private double lon;
+    private LatLng point;
 
     public int getId() {
         return id;
@@ -45,6 +48,14 @@ public class Marks {
 
     public void setLon(double lon) {
         this.lon = lon;
+    }
+
+    public LatLng getPoint() {
+        return point;
+    }
+
+    public void setPoint(LatLng point) {
+        this.point = point;
     }
 
     public void setInsert(Context context, ArrayList<Marks> prodList){

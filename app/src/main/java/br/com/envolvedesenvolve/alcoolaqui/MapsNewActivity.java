@@ -3,6 +3,7 @@ package br.com.envolvedesenvolve.alcoolaqui;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -34,14 +36,20 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
+import br.com.envolvedesenvolve.alcoolaqui.controller.AppController;
+import br.com.envolvedesenvolve.alcoolaqui.controller.SendData;
 import br.com.envolvedesenvolve.alcoolaqui.controller.Sync;
 import br.com.envolvedesenvolve.alcoolaqui.db.HelperDB;
 import br.com.envolvedesenvolve.alcoolaqui.db.MarksTable;
+import br.com.envolvedesenvolve.alcoolaqui.db.ProductTable;
 import br.com.envolvedesenvolve.alcoolaqui.db.UserTable;
 import br.com.envolvedesenvolve.alcoolaqui.model.Marks;
+import br.com.envolvedesenvolve.alcoolaqui.model.Product;
 import br.com.envolvedesenvolve.alcoolaqui.model.User;
 import br.com.envolvedesenvolve.alcoolaqui.view.AdicionarFragment;
 
@@ -78,6 +86,9 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
     private MarkerOptions mOpt = new MarkerOptions();
     private UserTable userTable = new UserTable(this);
     private MarksTable marksTable = new MarksTable(this);
+    private ProductTable productTable = new ProductTable(this);
+    private ArrayList<Marks> listMarks = new ArrayList<>();
+    private ArrayList<Product> listProducts = new ArrayList<>();
 
     public static MapsNewActivity getInstance() {
         return sInstance;
@@ -96,52 +107,38 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
         Sync sync = new Sync();
         sync.getSyncAll(this);
 
-        try{
-        // toolbar custom
-        toolbar = (Toolbar) findViewById(R.id.toolBar);
-        toolbar.inflateMenu(R.menu.main);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(""); // null or "" remove title
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        getSupportActionBar().setHomeButtonEnabled(false);
+        listMarks = marksTable.getAllMarks();
+        listProducts = productTable.getAllProds();
 
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_drawer, R.string.close_drawer);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+        try {
+            // toolbar custom
+            toolbar = (Toolbar) findViewById(R.id.toolBar);
+            toolbar.inflateMenu(R.menu.main);
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setTitle(""); // null or "" remove title
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            getSupportActionBar().setHomeButtonEnabled(false);
+
+            drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_drawer, R.string.close_drawer);
+            drawerLayout.addDrawerListener(toggle);
+            toggle.syncState();
 
             FloatingActionButton fab = findViewById(R.id.fab);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
 
-                    showDialog(new AdicionarFragment());
+                    // Add Arguments to send to Dialog
+                    Bundle bundle = new Bundle(); //Bundle containing data you are passing to the dialog
+                    bundle.putString("point", new Gson().toJson(point));
 
+                    showDialog(new AdicionarFragment(), bundle);
 
-//                    // Begin the transaction
-//                    FragmentTransaction ft = myContext.getSupportFragmentManager().beginTransaction();
-//                    ft.replace(R.id.nav_host_fragment, new CreateMarkFragment());
-//                    ft.commit();
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                Snackbar.make(view, "cadastrando produto...", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
                 }
             });
-
-
-//            try {
-//                messageReadListener = (IMapsBranchReadListener) this;
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-
-//            mylocationButton = findViewById(R.id.my_location);
-//            mylocationButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    Log.e(TAG, "mylocationButton.setOnClickListener");
-//                    centralizeCameraInUserPosition();
-//                }
-//            });
 
             settingsMenu();
             setUpMapIfNeeded();
@@ -197,19 +194,42 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
-                    case R.id.nav_tools: {
-                        Toast.makeText(getBaseContext(), "Trocar de usuario", Toast.LENGTH_SHORT).show();
-//                        logoutFromUser();
+
+                    case R.id.nav_home: {
+                        Toast.makeText(getBaseContext(), "Mapa", Toast.LENGTH_SHORT).show();
+//                        showDialog(new AboutFragment());
+                        break;
+                    }
+
+                    case R.id.nav_add: {
+                        Toast.makeText(getBaseContext(), "Adicionar Local", Toast.LENGTH_SHORT).show();
+//                        showDialog(new AboutFragment());
+                        break;
+                    }
+
+                    case R.id.nav_logout: {
+                        Toast.makeText(getBaseContext(), "Trocar de usuário", Toast.LENGTH_SHORT).show();
+//                        showDialog(new AboutFragment());
                         break;
                     }
                     case R.id.nav_share: {
+                        Toast.makeText(getBaseContext(), "Compartilhar", Toast.LENGTH_SHORT).show();
+//                        showDialog(new AboutFragment());
+                        break;
+                    }
+                    case R.id.nav_tools: {
+                        Toast.makeText(getBaseContext(), "Configurações", Toast.LENGTH_SHORT).show();
+//                        logoutFromUser();
+                        break;
+                    }
+                    case R.id.nav_about: {
                         Toast.makeText(getBaseContext(), "Sobre", Toast.LENGTH_SHORT).show();
 //                        showDialog(new AboutFragment());
                         break;
                     }
-                    case R.id.nav_send: {
-                        Toast.makeText(getBaseContext(), "Sair", Toast.LENGTH_SHORT).show();
-//                        logout();
+                    case R.id.nav_exit: {
+//                        Toast.makeText(getBaseContext(), "Sair", Toast.LENGTH_SHORT).show();
+                        logout();
                         break;
                     }
                     default: {
@@ -231,29 +251,29 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
         if (mMap != null) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
-            mMap.setMyLocationEnabled(true);
-            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                mMap.setMyLocationEnabled(true);
+                mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
-            mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-                @Override
-                public void onMyLocationChange(Location arg0) {
+                mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+                    @Override
+                    public void onMyLocationChange(Location arg0) {
 //                    Log.e("NomadUtilities", "Localização Lat " + arg0.getLatitude() + " Lng " + arg0.getLongitude());
-                    try {
-                        lat = arg0.getLatitude();
-                        lon = arg0.getLongitude();
-                        point = new LatLng(lat, lon);
+                        try {
+                            lat = arg0.getLatitude();
+                            lon = arg0.getLongitude();
+                            point = new LatLng(lat, lon);
 //                        Log.d(TAG, "localização lat:" + lat + " lon:" + lon);
 
-                        if (focuStarting) {
-                            focuStarting = false;
-                            centralizeCameraInUserPosition();
-                        }
+                            if (focuStarting) {
+                                focuStarting = false;
+                                centralizeCameraInUserPosition();
+                            }
 
-                    } catch (Exception e) {
-                        Log.e("", "ERRO myLocation.getLatitude(), myLocation.getLongitude()");
+                        } catch (Exception e) {
+                            Log.e("", "ERRO myLocation.getLatitude(), myLocation.getLongitude()");
+                        }
                     }
-                }
-            });
+                });
 
             } else {
                 // Request permission.
@@ -263,14 +283,17 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
             centralizeCameraInUserPosition();
         }
 
-        ArrayList<Marks> list = new ArrayList<>();
-        list = marksTable.getAllMarks();
-
-        for (Marks line : list) {
+        for (Marks line : listMarks) {
+            Product prod;
+            String desc = "", titleLocal = "";
             Log.e("main", "linha: " + line.getId());
 
-            LatLng local = (new LatLng(line.getLat(), line.getLon()));
-            addMarkerFull(line.getId(), local, line.getFk_product()+"");
+            LatLng position = (new LatLng(line.getLat(), line.getLon()));
+            prod = buscaProduto(line.getFk_product());
+            titleLocal = prod.getTitleLocal();
+            desc = prod.getNome() + "\n Valor: " + prod.getValor() + "\n" + prod.getEndereco();
+
+            addMarkerFull(line.getId(), position, titleLocal, desc);
         }
 
 
@@ -282,12 +305,34 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
         });
     }
 
-    private void addMarkerFull(int id, LatLng local, String title) {
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(local);
-        markerOptions.title("Localização de Teste");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-        mMap.addMarker(markerOptions);
+
+    public Product buscaProduto(int productId) {
+        Product resp = null;
+        for (Product line : listProducts) {
+            Log.e("main", "linha: " + line.getId());
+
+            if (line.getId() == productId) {
+                resp = line;
+                break;
+            }
+        }
+        return resp;
+    }
+
+    private void addMarkerFull(int id, LatLng position, String title, String desc) {
+        try {
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .position(position)
+                    .title(title)
+                    .snippet(desc)
+                    .zIndex(id);
+
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            marker = mMap.addMarker(markerOptions);
+            marker.showInfoWindow();
+        } catch (Exception e) {
+            Log.e(TAG, "ERRO addMarkerFull");
+        }
     }
 
     private void centralizeCameraInUserPosition() {
@@ -390,21 +435,21 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
 //        builder.show();
 //    }
 
-//    public void logout() {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setMessage(getResources().getString(R.string.quit_dialog_message));
-//        builder.setTitle(getResources().getString(R.string.quit_dialog_title));
-//        builder.setNegativeButton(getResources().getString(R.string.cancel_value), null);
-//        builder.setPositiveButton(getResources().getString(R.string.quit_dialog_button_title), new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                onDestroy();
-//                finish();
-//            }
-//        });
-//        builder.setCancelable(true);
-//        builder.show();
-//    }
+    public void logout() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(getResources().getString(R.string.quit_dialog_message));
+        builder.setTitle(getResources().getString(R.string.quit_dialog_title));
+        builder.setNegativeButton(getResources().getString(R.string.action_cancel), null);
+        builder.setPositiveButton(getResources().getString(R.string.quit_dialog_button_title), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onDestroy();
+                finish();
+            }
+        });
+        builder.setCancelable(true);
+        builder.show();
+    }
 
     public void showDialog(DialogFragment dialogFragment) {
         //mStackLevel++;
@@ -441,6 +486,7 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
         ft.addToBackStack(null);
 
         dialogFragment.setArguments(bundle);
+
         // Create and show the dialog.
         dialogFragment.show(ft, "dialog");
     }
