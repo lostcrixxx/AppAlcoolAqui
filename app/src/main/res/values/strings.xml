@@ -23,4 +23,8 @@
     <string name="quit_dialog_message">Tem certeza que deseja sair do aplicativo ?</string>
     <string name="quit_dialog_button_title">Sair</string>
 
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
 </resources>

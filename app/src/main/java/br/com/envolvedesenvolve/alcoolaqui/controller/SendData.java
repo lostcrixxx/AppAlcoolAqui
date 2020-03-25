@@ -11,7 +11,7 @@ import com.android.volley.toolbox.StringRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-import br.com.envolvedesenvolve.alcoolaqui.MapsNewActivity;
+import br.com.envolvedesenvolve.alcoolaqui.MapsActivity;
 
 public class SendData {
 
@@ -24,7 +24,7 @@ public class SendData {
         StringRequest request = new StringRequest(Request.Method.POST, userURL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                MapsNewActivity maps = MapsNewActivity.getInstance();
+                MapsActivity maps = MapsActivity.getInstance();
                 maps.addMarker();
             }
         }, new Response.ErrorListener() {
@@ -62,7 +62,7 @@ public class SendData {
         StringRequest request = new StringRequest(Request.Method.POST, productURL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                MapsNewActivity maps = MapsNewActivity.getInstance();
+                MapsActivity maps = MapsActivity.getInstance();
                 maps.addMarker();
             }
         }, new Response.ErrorListener() {

@@ -3,16 +3,22 @@ package br.com.envolvedesenvolve.alcoolaqui;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,13 +42,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
-import br.com.envolvedesenvolve.alcoolaqui.controller.AppController;
-import br.com.envolvedesenvolve.alcoolaqui.controller.SendData;
 import br.com.envolvedesenvolve.alcoolaqui.controller.Sync;
 import br.com.envolvedesenvolve.alcoolaqui.db.HelperDB;
 import br.com.envolvedesenvolve.alcoolaqui.db.MarksTable;
@@ -50,7 +53,7 @@ import br.com.envolvedesenvolve.alcoolaqui.db.ProductTable;
 import br.com.envolvedesenvolve.alcoolaqui.db.UserTable;
 import br.com.envolvedesenvolve.alcoolaqui.model.Marks;
 import br.com.envolvedesenvolve.alcoolaqui.model.Product;
-import br.com.envolvedesenvolve.alcoolaqui.model.User;
+import br.com.envolvedesenvolve.alcoolaqui.utils.MyInfoWindowAdapter;
 import br.com.envolvedesenvolve.alcoolaqui.view.AdicionarFragment;
 
 /**
@@ -58,12 +61,12 @@ import br.com.envolvedesenvolve.alcoolaqui.view.AdicionarFragment;
  * Modified by Cristiano M. on 21/03/2020
  */
 
-public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationClickListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationClickListener {
 
-    private static final String TAG = "MapsNewActivity";
+    private static final String TAG = "MapsActivity";
     private static final int MY_LOCATION_REQUEST_CODE = 1;
-    private static final int MULTIPLE_PERMISSIONS = 100;
-    private static MapsNewActivity sInstance = null; // Singleton instance
+//    private static final int MULTIPLE_PERMISSIONS = 100;
+    private static MapsActivity sInstance = null; // Singleton instance
 
     private double lat, lon;
     private boolean focuStarting = true;
@@ -90,7 +93,7 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
     private ArrayList<Marks> listMarks = new ArrayList<>();
     private ArrayList<Product> listProducts = new ArrayList<>();
 
-    public static MapsNewActivity getInstance() {
+    public static MapsActivity getInstance() {
         return sInstance;
     }
 
@@ -100,12 +103,12 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
         setContentView(R.layout.activity_maps_new);
         sInstance = this; // Setup singleton instance
 
-        checkPermission();
-
-        HelperDB db = HelperDB.getInstance(this);
-
-        Sync sync = new Sync();
-        sync.getSyncAll(this);
+//        checkPermission();
+//
+//        HelperDB db = HelperDB.getInstance(this);
+//
+//        Sync sync = new Sync();
+//        sync.getSyncAll(this);
 
         listMarks = marksTable.getAllMarks();
         listProducts = productTable.getAllProds();
@@ -142,6 +145,8 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
 
             settingsMenu();
             setUpMapIfNeeded();
+//            mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
+//            mapFragment.getMapAsync(this);
 
         } catch (Exception e) {
             Log.e(TAG, "ERRO " + e.toString());
@@ -202,8 +207,12 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
                     }
 
                     case R.id.nav_add: {
-                        Toast.makeText(getBaseContext(), "Adicionar Local", Toast.LENGTH_SHORT).show();
-//                        showDialog(new AboutFragment());
+                        // Add Arguments to send to Dialog
+                        Bundle bundle = new Bundle(); //Bundle containing data you are passing to the dialog
+                        bundle.putString("point", new Gson().toJson(point));
+
+                        showDialog(new AdicionarFragment(), bundle);
+//                        Toast.makeText(getBaseContext(), "Adicionar Local", Toast.LENGTH_SHORT).show();
                         break;
                     }
 
@@ -254,6 +263,34 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
+
+                mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+                    @Override
+                    public View getInfoWindow(Marker marker) {
+
+                        return null;
+                    }
+
+                    @Override
+                    public View getInfoContents(Marker marker) {
+
+                        View row = getLayoutInflater().inflate(R.layout.custom_address, null);
+                        TextView t1_locality = (TextView) row.findViewById(R.id.locality);
+                        TextView t2_latitude = (TextView) row.findViewById(R.id.latTxt);
+                        TextView t3_longitude = (TextView) row.findViewById(R.id.lngTxt);
+                        TextView t4_snippet = (TextView) row.findViewById(R.id.snippet);
+
+                        LatLng ll = marker.getPosition();
+                        t1_locality.setText(marker.getTitle());
+                        t2_latitude.setText(String.valueOf(ll.latitude));
+                        t3_longitude.setText(String.valueOf(ll.longitude));
+                        t4_snippet.setText(marker.getSnippet());
+
+
+                        return null;
+                    }
+                });
+
                 mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
                     @Override
                     public void onMyLocationChange(Location arg0) {
@@ -275,27 +312,26 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
                     }
                 });
 
+                for (Marks line : listMarks) {
+                    Product prod;
+                    String desc = "", titleLocal = "";
+                    Log.e("main", "linha: " + line.getId());
+
+                    LatLng position = (new LatLng(line.getLat(), line.getLon()));
+                    prod = buscaProduto(line.getFk_product());
+                    titleLocal = prod.getTitleLocal();
+                    desc = prod.getNome() + "\n Valor: " + prod.getValor() + "\n" + prod.getEndereco();
+
+                    addMarkerFull(line.getId(), position, titleLocal, desc);
+                }
+
             } else {
                 // Request permission.
-                ActivityCompat.requestPermissions(MapsNewActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                ActivityCompat.requestPermissions(MapsActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_LOCATION_REQUEST_CODE);
             }
             centralizeCameraInUserPosition();
         }
-
-        for (Marks line : listMarks) {
-            Product prod;
-            String desc = "", titleLocal = "";
-            Log.e("main", "linha: " + line.getId());
-
-            LatLng position = (new LatLng(line.getLat(), line.getLon()));
-            prod = buscaProduto(line.getFk_product());
-            titleLocal = prod.getTitleLocal();
-            desc = prod.getNome() + "\n Valor: " + prod.getValor() + "\n" + prod.getEndereco();
-
-            addMarkerFull(line.getId(), position, titleLocal, desc);
-        }
-
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -324,12 +360,27 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
             MarkerOptions markerOptions = new MarkerOptions()
                     .position(position)
                     .title(title)
-                    .snippet(desc)
-                    .zIndex(id);
+                    .snippet(desc);
 
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
             marker = mMap.addMarker(markerOptions);
+
+
             marker.showInfoWindow();
+
+            //Open New Activity
+            mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+
+                @Override
+                public void onInfoWindowClick(Marker marker) {
+
+//                    // Add Arguments to send to Dialog
+//                    Bundle bundle = new Bundle(); //Bundle containing data you are passing to the dialog
+//                    bundle.putString("point", new Gson().toJson(point));
+//
+//                    showDialog(new AdicionarFragment(), bundle);
+                }
+            });
         } catch (Exception e) {
             Log.e(TAG, "ERRO addMarkerFull");
         }
@@ -347,7 +398,7 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
 
         } else {
             // Request permission.
-            ActivityCompat.requestPermissions(MapsNewActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+            ActivityCompat.requestPermissions(MapsActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_LOCATION_REQUEST_CODE);
         }
     }
@@ -551,78 +602,78 @@ public class MapsNewActivity extends AppCompatActivity implements OnMapReadyCall
 //        }
 //    }
 
-    @TargetApi(23)
-    public void checkPermission() {
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) +
-                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) +
-                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
-                    shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) ||
-                    shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requestPermissions(
-                            new String[]{
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                            }, MULTIPLE_PERMISSIONS);
-                }
-
-            } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requestPermissions(
-                            new String[]{
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                            }, MULTIPLE_PERMISSIONS);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[],
-                                           int[] grantResults) {
-
-        Log.d("Display", "Permissões" + requestCode + grantResults);
-
-        switch (requestCode) {
-            case MULTIPLE_PERMISSIONS:
-                if (grantResults.length > 0) {
-//                    boolean writeExternalFile = grantResults[2] == PackageManager.PERMISSION_GRANTED;
-//                    boolean coarseLocation = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-                    boolean fineLocation = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-//                    if (!fineLocation || !coarseLocation || !writeExternalFile) {
-                    if (!fineLocation) {
-//                        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//                        builder.setTitle(this.getResources().getString(R.string.limited_functionality_title));
-//                        builder.setMessage(this.getResources().getString(R.string.limited_functionality_message));
-//                        builder.setPositiveButton(android.R.string.ok, null);
-//                        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-//                            @Override
-//                            public void onDismiss(DialogInterface dialog) {
-                        checkPermission();
-//                            }
-//                        });
-//                        builder.show();
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        requestPermissions(
-                                new String[]{
-                                        Manifest.permission.ACCESS_FINE_LOCATION,
-                                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                                }, MULTIPLE_PERMISSIONS);
-                    }
-                }
-                break;
-        }
-    }
+//    @TargetApi(23)
+//    public void checkPermission() {
+//        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) +
+//                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) +
+//                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                != PackageManager.PERMISSION_GRANTED) {
+//
+//            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
+//                    shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) ||
+//                    shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                    requestPermissions(
+//                            new String[]{
+//                                    Manifest.permission.ACCESS_FINE_LOCATION,
+//                                    Manifest.permission.ACCESS_COARSE_LOCATION,
+//                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+//                            }, MULTIPLE_PERMISSIONS);
+//                }
+//
+//            } else {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                    requestPermissions(
+//                            new String[]{
+//                                    Manifest.permission.ACCESS_FINE_LOCATION,
+//                                    Manifest.permission.ACCESS_COARSE_LOCATION,
+//                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+//                            }, MULTIPLE_PERMISSIONS);
+//                }
+//            }
+//        }
+//    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           String permissions[],
+//                                           int[] grantResults) {
+//
+//        Log.d("Display", "Permissões" + requestCode + grantResults);
+//
+//        switch (requestCode) {
+//            case MULTIPLE_PERMISSIONS:
+//                if (grantResults.length > 0) {
+////                    boolean writeExternalFile = grantResults[2] == PackageManager.PERMISSION_GRANTED;
+////                    boolean coarseLocation = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+//                    boolean fineLocation = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+////                    if (!fineLocation || !coarseLocation || !writeExternalFile) {
+//                    if (!fineLocation) {
+////                        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+////                        builder.setTitle(this.getResources().getString(R.string.limited_functionality_title));
+////                        builder.setMessage(this.getResources().getString(R.string.limited_functionality_message));
+////                        builder.setPositiveButton(android.R.string.ok, null);
+////                        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+////                            @Override
+////                            public void onDismiss(DialogInterface dialog) {
+//                        checkPermission();
+////                            }
+////                        });
+////                        builder.show();
+//                    }
+//                } else {
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                        requestPermissions(
+//                                new String[]{
+//                                        Manifest.permission.ACCESS_FINE_LOCATION,
+//                                        Manifest.permission.ACCESS_COARSE_LOCATION,
+//                                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+//                                }, MULTIPLE_PERMISSIONS);
+//                    }
+//                }
+//                break;
+//        }
+//    }
 }
 
 
