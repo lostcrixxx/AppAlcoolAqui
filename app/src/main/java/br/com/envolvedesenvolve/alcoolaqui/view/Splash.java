@@ -6,12 +6,18 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import br.com.envolvedesenvolve.alcoolaqui.MapsActivity;
 import br.com.envolvedesenvolve.alcoolaqui.R;
@@ -38,6 +44,12 @@ public class Splash extends AppCompatActivity {
 
         imageView = (ImageView)findViewById(R.id.imageView2); // Declare an imageView to show the animation.
 
+
+    }
+
+    private void animation() {
+        imageView.setImageResource(R.drawable.bottle);
+
         anim = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in); // Create the animation.
         anim.setAnimationListener(new Animation.AnimationListener() {
             @Override
@@ -47,6 +59,7 @@ public class Splash extends AppCompatActivity {
             @Override
             public void onAnimationEnd(Animation animation) {
                 startActivity(new Intent(getApplication(), MapsActivity.class));
+                finish();
                 // HomeActivity.class is the activity to go after showing the splash screen.
             }
 
@@ -90,44 +103,64 @@ public class Splash extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[],
-                                           int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
-        Log.d("Display", "Permissões" + requestCode + grantResults);
+        //Checking the request code of our request
+        if (requestCode == 23) {
 
-        switch (requestCode) {
-            case MULTIPLE_PERMISSIONS:
-                if (grantResults.length > 0) {
-//                    boolean writeExternalFile = grantResults[2] == PackageManager.PERMISSION_GRANTED;
-//                    boolean coarseLocation = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-                    boolean fineLocation = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-//                    if (!fineLocation || !coarseLocation || !writeExternalFile) {
-                    if (!fineLocation) {
-//                        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//                        builder.setTitle(this.getResources().getString(R.string.limited_functionality_title));
-//                        builder.setMessage(this.getResources().getString(R.string.limited_functionality_message));
-//                        builder.setPositiveButton(android.R.string.ok, null);
-//                        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-//                            @Override
-//                            public void onDismiss(DialogInterface dialog) {
-                        checkPermission();
-//                            }
-//                        });
-//                        builder.show();
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        requestPermissions(
-                                new String[]{
-                                        Manifest.permission.ACCESS_FINE_LOCATION,
-                                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                                }, MULTIPLE_PERMISSIONS);
-                    }
-                }
-                break;
+            //If permission is granted
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                //Displaying a toast
+                Toast.makeText(this, "Permission granted", Toast.LENGTH_LONG).show();
+            } else {
+                //Displaying another toast if permission is not granted
+                Toast.makeText(this, "Permission Needed To Run The App", Toast.LENGTH_LONG).show();
+            }
+        }
+
+        if (requestCode == MULTIPLE_PERMISSIONS) {
+            Map<String, Integer> perms = new HashMap<String, Integer>();
+
+            // Initial
+            perms.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
+            perms.put(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            perms.put(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            perms.put(Manifest.permission.READ_SMS, PackageManager.PERMISSION_GRANTED);
+
+            // Fill with results
+            for (int i = 0; i < permissions.length; i++)
+                perms.put(permissions[i], grantResults[i]);
+            // Check for ACCESS_FINE_LOCATION
+            if (perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && perms.get(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    perms.get(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    perms.get(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
+                // All Permissions Granted
+                // Here start the activity
+//                final Handler handler = new Handler();
+//                handler.postDelayed(new Runnable() {
+//
+//                    @Override
+//                    public void run() {
+//                        Intent i = new Intent(Splash.this, MapsActivity.class);
+//                        startActivity(i);
+//                        finish();
+//
+//                    }
+//
+//                }, 1000);
+
+                animation();
+
+            } else {
+                // Permission Denied
+                Toast.makeText(Splash.this, "Alguma permissão foi negada", Toast.LENGTH_SHORT)
+                        .show();
+
+                finish();
+            }
+
         }
     }
-
 }

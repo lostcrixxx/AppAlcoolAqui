@@ -2,6 +2,8 @@ package br.com.envolvedesenvolve.alcoolaqui.model;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 
 import com.google.android.gms.maps.model.LatLng;
 

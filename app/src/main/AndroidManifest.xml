@@ -20,6 +20,10 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
+            android:name=".MapsActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
             android:name=".view.Splash"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -28,9 +32,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".MapsActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

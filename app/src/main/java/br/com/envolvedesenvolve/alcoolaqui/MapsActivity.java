@@ -55,17 +55,17 @@ import br.com.envolvedesenvolve.alcoolaqui.model.Marks;
 import br.com.envolvedesenvolve.alcoolaqui.model.Product;
 import br.com.envolvedesenvolve.alcoolaqui.utils.MyInfoWindowAdapter;
 import br.com.envolvedesenvolve.alcoolaqui.view.AdicionarFragment;
+import br.com.envolvedesenvolve.alcoolaqui.view.DetalhesFragment;
 
 /**
  * Created by Cristiano M. on 21/03/2020
- * Modified by Cristiano M. on 21/03/2020
+ * Modified by Cristiano M. on 25/03/2020
  */
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationClickListener {
 
     private static final String TAG = "MapsActivity";
     private static final int MY_LOCATION_REQUEST_CODE = 1;
-//    private static final int MULTIPLE_PERMISSIONS = 100;
     private static MapsActivity sInstance = null; // Singleton instance
 
     private double lat, lon;
@@ -103,13 +103,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps_new);
         sInstance = this; // Setup singleton instance
 
-//        checkPermission();
-//
-//        HelperDB db = HelperDB.getInstance(this);
-//
-//        Sync sync = new Sync();
-//        sync.getSyncAll(this);
-
         listMarks = marksTable.getAllMarks();
         listProducts = productTable.getAllProds();
 
@@ -145,16 +138,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             settingsMenu();
             setUpMapIfNeeded();
-//            mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-//            mapFragment.getMapAsync(this);
 
         } catch (Exception e) {
             Log.e(TAG, "ERRO " + e.toString());
             e.printStackTrace();
         }
     }
-
-    long idBranchSpinner;
 
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
@@ -375,10 +364,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 public void onInfoWindowClick(Marker marker) {
 
 //                    // Add Arguments to send to Dialog
-//                    Bundle bundle = new Bundle(); //Bundle containing data you are passing to the dialog
-//                    bundle.putString("point", new Gson().toJson(point));
-//
-//                    showDialog(new AdicionarFragment(), bundle);
+                    Bundle bundle = new Bundle(); //Bundle containing data you are passing to the dialog
+                    bundle.putString("marker", new Gson().toJson(marker));
+
+                    showDialog(new DetalhesFragment(), bundle);
                 }
             });
         } catch (Exception e) {
@@ -391,10 +380,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
+            mMap.getUiSettings().setZoomControlsEnabled(false);
             mMap.setOnMyLocationClickListener(this);
 
             centralizeCamera(point);
-            updateZoomCamera(17.0f);
+            updateZoomCamera();
 
         } else {
             // Request permission.
@@ -407,7 +397,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMyLocationClick(@NonNull Location location) {
         point = new LatLng(location.getLatitude(), location.getLongitude());
         centralizeCamera(point);
-        updateZoomCamera(17.0f);
+        updateZoomCamera();
 //        Toast.makeText(this, "Current location:\n" + point, Toast.LENGTH_LONG).show();
 //        Log.e(TAG, "coordenadas " + location);
     }
@@ -415,7 +405,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void addMarker() {
         mMap.addMarker(new MarkerOptions().position(point).title("localização"));
         centralizeCamera(point);
-        updateZoomCamera(17.0f);
+        updateZoomCamera();
     }
 
     private void centralizeCamera(LatLng point) {
@@ -423,11 +413,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
     }
 
-    private void updateZoomCamera(float zoom) {
+    private void updateZoomCamera() {
         try {
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(zoom));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(10.0f));
         } catch (Exception e) {
-            Log.e("Maps", "ERRO updateZoomCamera 4");
+            Log.e("Maps", "ERRO updateZoomCamera");
             e.printStackTrace();
         }
     }
@@ -602,78 +592,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        }
 //    }
 
-//    @TargetApi(23)
-//    public void checkPermission() {
-//        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) +
-//                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) +
-//                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                != PackageManager.PERMISSION_GRANTED) {
-//
-//            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
-//                    shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) ||
-//                    shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                    requestPermissions(
-//                            new String[]{
-//                                    Manifest.permission.ACCESS_FINE_LOCATION,
-//                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-//                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-//                            }, MULTIPLE_PERMISSIONS);
-//                }
-//
-//            } else {
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                    requestPermissions(
-//                            new String[]{
-//                                    Manifest.permission.ACCESS_FINE_LOCATION,
-//                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-//                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-//                            }, MULTIPLE_PERMISSIONS);
-//                }
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           String permissions[],
-//                                           int[] grantResults) {
-//
-//        Log.d("Display", "Permissões" + requestCode + grantResults);
-//
-//        switch (requestCode) {
-//            case MULTIPLE_PERMISSIONS:
-//                if (grantResults.length > 0) {
-////                    boolean writeExternalFile = grantResults[2] == PackageManager.PERMISSION_GRANTED;
-////                    boolean coarseLocation = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-//                    boolean fineLocation = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-////                    if (!fineLocation || !coarseLocation || !writeExternalFile) {
-//                    if (!fineLocation) {
-////                        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-////                        builder.setTitle(this.getResources().getString(R.string.limited_functionality_title));
-////                        builder.setMessage(this.getResources().getString(R.string.limited_functionality_message));
-////                        builder.setPositiveButton(android.R.string.ok, null);
-////                        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-////                            @Override
-////                            public void onDismiss(DialogInterface dialog) {
-//                        checkPermission();
-////                            }
-////                        });
-////                        builder.show();
-//                    }
-//                } else {
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                        requestPermissions(
-//                                new String[]{
-//                                        Manifest.permission.ACCESS_FINE_LOCATION,
-//                                        Manifest.permission.ACCESS_COARSE_LOCATION,
-//                                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-//                                }, MULTIPLE_PERMISSIONS);
-//                    }
-//                }
-//                break;
-//        }
-//    }
 }
 
 

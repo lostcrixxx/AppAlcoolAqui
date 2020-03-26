@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import br.com.envolvedesenvolve.alcoolaqui.model.Marks;
 import br.com.envolvedesenvolve.alcoolaqui.model.Product;
 import br.com.envolvedesenvolve.alcoolaqui.model.User;
 
@@ -118,6 +120,39 @@ public class ProductTable extends HelperDB {
 
         db.close(); // close db connection
         return prodList;
+    }
+
+    public void insertValueOnTableMarks(ArrayList<Marks> insp) {
+//        Log.i("DatabaseManager", "Teste insert INICIO");
+
+        // you can use INSERT only
+        String sql = "INSERT OR REPLACE INTO " +TABLE_NAME+ " ( id, fk_product, lat, lon) VALUES ( ?,?,?,? )";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.beginTransactionNonExclusive();
+        // db.beginTransaction();
+
+        SQLiteStatement stmt = db.compileStatement(sql);
+
+        for (int i = 0; i < insp.size(); i++) {
+            stmt.bindLong(1, insp.get(i).getId());
+            stmt.bindLong(2, insp.get(i).getFk_product());
+            stmt.bindDouble(3, insp.get(i).getLat());
+            stmt.bindDouble(4, insp.get(i).getLon());
+
+//            Log.i("DatabaseManager", "Teste insert Data " + insp.get(i).getDt_sync());
+
+            stmt.execute();
+            stmt.clearBindings();
+//            Log.e("DatabaseManager", "Teste insert PROCESSANDO " + count++);
+        }
+
+//        Log.i("DatabaseManager", "Teste insert FIM ");
+        db.setTransactionSuccessful();
+        db.endTransaction();
+
+        db.close();
     }
 
     public void setValuesDatabase(Context context, ContentValues cv) {

@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -79,31 +80,37 @@ public class MarksTable extends HelperDB{
         return notes;
     }
 
-    public ArrayList<Marks> getAllUsers() {
-        ArrayList<Marks> notes = new ArrayList<>();
+    public void insertValueOnTableMarks(ArrayList<Marks> insp) {
+//        Log.i("DatabaseManager", "Teste insert INICIO");
 
-        // Select All Query
-        String selectQuery = "SELECT * FROM " + TABLE_NAME;
+        // you can use INSERT only
+        String sql = "INSERT OR REPLACE INTO " +TABLE_NAME+ " ( id, fk_product, lat, lon) VALUES ( ?,?,?,? )";
 
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
 
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
-                Marks mark = new Marks();
-                mark.setId(cursor.getInt(cursor.getColumnIndex(MarksTable.COLUMN_ID)));
-                mark.setFk_product(cursor.getInt(cursor.getColumnIndex(MarksTable.COLUMN_FK_PRODUCT)));
-                mark.setLat(cursor.getDouble(cursor.getColumnIndex(MarksTable.COLUMN_LAT)));
-                mark.setLon(cursor.getDouble(cursor.getColumnIndex(MarksTable.COLUMN_LON)));
+        db.beginTransactionNonExclusive();
+        // db.beginTransaction();
 
-                notes.add(mark);
+        SQLiteStatement stmt = db.compileStatement(sql);
 
-            } while (cursor.moveToNext());
+        for (int i = 0; i < insp.size(); i++) {
+            stmt.bindLong(1, insp.get(i).getId());
+            stmt.bindLong(2, insp.get(i).getFk_product());
+            stmt.bindDouble(3, insp.get(i).getLat());
+            stmt.bindDouble(4, insp.get(i).getLon());
+
+//            Log.i("DatabaseManager", "Teste insert Data " + insp.get(i).getDt_sync());
+
+            stmt.execute();
+            stmt.clearBindings();
+//            Log.e("DatabaseManager", "Teste insert PROCESSANDO " + count++);
         }
 
-        db.close(); // close db connection
-        return notes;
+//        Log.i("DatabaseManager", "Teste insert FIM ");
+        db.setTransactionSuccessful();
+        db.endTransaction();
+
+        db.close();
     }
 
     public void setValuesDatabase(Context context, ContentValues cv) {

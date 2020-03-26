@@ -24,6 +24,8 @@ import br.com.envolvedesenvolve.alcoolaqui.model.User;
 
 public class Sync {
 
+    Marks marks;
+
     public void getSyncAll(final Context context){
 //        setUserAll(context);
         setProductAll(context);
@@ -153,26 +155,27 @@ public class Sync {
             public void onResponse(JSONArray response) {
 
                 JSONObject obj = null;
-                ArrayList<Marks> prodList = new ArrayList<>();
+                ArrayList<Marks> marksList = new ArrayList<>();
 
                 if (response != null) {
                     try {
 
                         for (int i = 0; i < response.length(); i++) {
                             obj = response.getJSONObject(i);
-                            Marks prod = new Marks();
+                            marks = new Marks();
 
-                            prod.setId(Integer.valueOf(obj.getString(MarksTable.COLUMN_ID)));
-                            prod.setFk_product(Integer.valueOf(obj.getString(MarksTable.COLUMN_FK_PRODUCT)));
-                            prod.setLat(Double.valueOf(obj.getString(MarksTable.COLUMN_LAT)));
-                            prod.setLon(Double.valueOf(obj.getString(MarksTable.COLUMN_LON)));
+                            marks.setId(Integer.valueOf(obj.getString(MarksTable.COLUMN_ID)));
+                            marks.setFk_product(Integer.valueOf(obj.getString(MarksTable.COLUMN_FK_PRODUCT)));
+                            marks.setLat(Double.valueOf(obj.getString(MarksTable.COLUMN_LAT)));
+                            marks.setLon(Double.valueOf(obj.getString(MarksTable.COLUMN_LON)));
 //                            prod.setDt_inc(obj.getString(ProductTable.COLUMN_DT_INC));
 
-                            prodList.add(prod);
+                            marksList.add(marks);
                         }
 
-                        Marks prod = new Marks();
-                        prod.setInsert(context, prodList); // Salva no SQLite
+//                        marks.setInsert(context, marksList); // Salva no SQLite
+                        MarksTable marksTable = new MarksTable(context);
+                        marksTable.insertValueOnTableMarks(marksList); // Salva no SQLite
 
                     } catch (JSONException e) {
                         e.printStackTrace();
