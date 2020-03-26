@@ -23,6 +23,8 @@ import br.com.envolvedesenvolve.alcoolaqui.MapsActivity;
 import br.com.envolvedesenvolve.alcoolaqui.R;
 import br.com.envolvedesenvolve.alcoolaqui.controller.Sync;
 import br.com.envolvedesenvolve.alcoolaqui.db.HelperDB;
+import io.sentry.Sentry;
+import io.sentry.android.AndroidSentryClientFactory;
 
 public class Splash extends AppCompatActivity {
 
@@ -36,6 +38,8 @@ public class Splash extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         checkPermission();
+
+        Sentry.init("https://b5160de4ed1f460c88c9759084ddc223@sentry.io/5175284", new AndroidSentryClientFactory(this));
 
         HelperDB db = HelperDB.getInstance(this);
 

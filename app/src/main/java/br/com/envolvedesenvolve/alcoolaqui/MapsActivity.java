@@ -311,7 +311,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     titleLocal = prod.getTitleLocal();
                     desc = prod.getNome() + "\n Valor: " + prod.getValor() + "\n" + prod.getEndereco();
 
-                    addMarkerFull(line.getId(), position, titleLocal, desc);
+                    addMarkerFull(line.getId(), position, titleLocal, String.valueOf("R$ " + prod.getValor()));
                 }
 
             } else {
@@ -363,11 +363,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 @Override
                 public void onInfoWindowClick(Marker marker) {
 
-//                    // Add Arguments to send to Dialog
-                    Bundle bundle = new Bundle(); //Bundle containing data you are passing to the dialog
-                    bundle.putString("marker", new Gson().toJson(marker));
-
-                    showDialog(new DetalhesFragment(), bundle);
+//                    Product prod = new Product();
+//                    prod.setNome(marker.getTitle());
+//                    prod.setTitleLocal(marker.getSnippet());
+////                    // Add Arguments to send to Dialog
+//                    Bundle bundle = new Bundle(); //Bundle containing data you are passing to the dialog
+//                    bundle.putString("prod", new Gson().toJson(prod));
+//
+//                    showDialog(new DetalhesFragment(), bundle);
                 }
             });
         } catch (Exception e) {

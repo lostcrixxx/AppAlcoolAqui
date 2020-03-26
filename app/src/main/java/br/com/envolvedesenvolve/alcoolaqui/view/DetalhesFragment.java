@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import br.com.envolvedesenvolve.alcoolaqui.R;
 import br.com.envolvedesenvolve.alcoolaqui.controller.SendData;
 import br.com.envolvedesenvolve.alcoolaqui.model.Marks;
+import br.com.envolvedesenvolve.alcoolaqui.model.Product;
 
 public class DetalhesFragment extends DialogFragment {
 
@@ -29,7 +30,7 @@ public class DetalhesFragment extends DialogFragment {
 
     protected View view;
     private Activity parent;
-    private Marks mark = new Marks();
+    private Product prod = new Product();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,7 +55,8 @@ public class DetalhesFragment extends DialogFragment {
         edtValor = (EditText)view.findViewById(R.id.edtValor);
         edtTitle_local = (EditText)view.findViewById(R.id.edtLocal);
 
-        edtNome.setText(marker.getTitle());
+        edtNome.setText(prod.getNome());
+        edtTitle_local.setText(prod.getTitleLocal());
 
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,8 +72,8 @@ public class DetalhesFragment extends DialogFragment {
     private boolean getEventInformation() {
         Bundle args = getArguments();
         if (args != null) {
-            String jsonArgs = args.getString("marker");
-            marker = new Gson().fromJson(jsonArgs, Marker.class);
+            String jsonArgs = args.getString("prod");
+            prod = new Gson().fromJson(jsonArgs, Product.class);
 
 //            Log.e("AdicionarFragment", "point: " + point);
 
