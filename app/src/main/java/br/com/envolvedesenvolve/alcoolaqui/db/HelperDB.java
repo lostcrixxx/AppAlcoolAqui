@@ -8,7 +8,7 @@ import android.util.Log;
 
 public class HelperDB extends SQLiteOpenHelper {
 
-    private static final String TAG = "database";
+    private static final String TAG = "HelperDB";
 
     static HelperDB mDbHelper;
 
@@ -52,7 +52,7 @@ public class HelperDB extends SQLiteOpenHelper {
     }
 
     public boolean insertValueOnTable(String table, ContentValues values) {
-        Log.e(TAG, "Inserindo nas tabelas");
+//        Log.d(TAG, "Inserindo nas tabelas");
 //        values.put("dt_inc", mFormat.format(new Date()));
 //        values.remove("id");
         SQLiteDatabase db = this.getWritableDatabase();
@@ -61,5 +61,14 @@ public class HelperDB extends SQLiteOpenHelper {
             return false;
         else
             return true;
+    }
+
+    // clear list
+    public void deleteListMarks() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(UserTable.TABLE_NAME, null, null);
+        db.delete(ProductTable.TABLE_NAME, null, null);
+        db.delete(MarksTable.TABLE_NAME, null, null);
+        db.close();
     }
 }

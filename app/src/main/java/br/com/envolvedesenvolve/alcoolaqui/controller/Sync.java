@@ -1,6 +1,8 @@
 package br.com.envolvedesenvolve.alcoolaqui.controller;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -16,6 +18,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import br.com.envolvedesenvolve.alcoolaqui.MapsActivity;
+import br.com.envolvedesenvolve.alcoolaqui.db.HelperDB;
 import br.com.envolvedesenvolve.alcoolaqui.db.MarksTable;
 import br.com.envolvedesenvolve.alcoolaqui.db.ProductTable;
 import br.com.envolvedesenvolve.alcoolaqui.model.Marks;
@@ -24,7 +28,11 @@ import br.com.envolvedesenvolve.alcoolaqui.model.User;
 
 public class Sync {
 
-    Marks marks;
+    private static final String TAG = "Sync";
+
+    private int idProduct;
+    private Marks marks;
+    private SharedPreferences prefs;
 
     public void getSyncAll(final Context context){
 //        setUserAll(context);
@@ -195,5 +203,56 @@ public class Sync {
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         queue.add(request);
+    }
+
+    public int getLastIdProduct(final Context context) {
+//        Log.d("TAG", "setProductAll");
+
+        prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE);
+        final SharedPreferences.Editor ed = prefs.edit();
+
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(context);
+        String url = "http://alcoolaqui.atspace.eu/produto.php";
+
+        JsonArrayRequest request = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+
+                JSONObject obj = null;
+
+                if (response != null) {
+                    try {
+
+                        for (int i = 0; i < response.length(); i++) {
+                            obj = response.getJSONObject(i);
+
+                            idProduct = Integer.valueOf(obj.getString(ProductTable.COLUMN_ID));
+                        }
+                        ed.putInt("idProduct", idProduct);
+                        ed.commit();
+
+//                        Log.d(TAG, "teste Sync idProduct " + idProduct);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("TAG", "getProduct ERROR: " + error);
+            }
+        });
+
+//        request.setRetryPolicy(new DefaultRetryPolicy(
+//                3000,
+//                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+//                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        queue.add(request);
+
+        return idProduct;
     }
 }

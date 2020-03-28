@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -59,15 +60,17 @@ import br.com.envolvedesenvolve.alcoolaqui.view.DetalhesFragment;
 
 /**
  * Created by Cristiano M. on 21/03/2020
- * Modified by Cristiano M. on 25/03/2020
+ * Modified by Cristiano M. on 28/03/2020
  */
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationClickListener {
 
     private static final String TAG = "MapsActivity";
     private static final int MY_LOCATION_REQUEST_CODE = 1;
+
     private static MapsActivity sInstance = null; // Singleton instance
 
+    public int idProduct;
     private double lat, lon;
     private boolean focuStarting = true;
 
@@ -75,6 +78,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private Menu menu;
+    public SharedPreferences prefs;
 
     private GoogleMap mMap;
     private Marker marker;
@@ -301,17 +305,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
 
-                for (Marks line : listMarks) {
-                    Product prod;
-                    String desc = "", titleLocal = "";
-                    Log.e("main", "linha: " + line.getId());
+                try {
+                    for (Marks line : listMarks) {
+                        Product prod;
+                        String desc = "", titleLocal = "";
+                        Log.e("main", "linha: " + line.getId());
 
-                    LatLng position = (new LatLng(line.getLat(), line.getLon()));
-                    prod = buscaProduto(line.getFk_product());
-                    titleLocal = prod.getTitleLocal();
-                    desc = prod.getNome() + "\n Valor: " + prod.getValor() + "\n" + prod.getEndereco();
+                        LatLng position = (new LatLng(line.getLat(), line.getLon()));
+                        prod = buscaProduto(line.getFk_product());
+                        titleLocal = prod.getTitleLocal();
+                        desc = prod.getNome() + "\n Valor: " + prod.getValor() + "\n" + prod.getEndereco();
 
-                    addMarkerFull(line.getId(), position, titleLocal, String.valueOf("R$ " + prod.getValor()));
+                        addMarkerFull(line.getId(), position, titleLocal, String.valueOf("R$ " + prod.getValor()));
+                    }
+                }catch(Exception e) {
+                    Toast.makeText(this, "Não foi possível carregar os locais", Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "ERRO não foi possível carregar os locais");
                 }
 
             } else {

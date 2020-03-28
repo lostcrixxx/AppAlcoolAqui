@@ -1,5 +1,7 @@
 package br.com.envolvedesenvolve.alcoolaqui.controller;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
@@ -12,12 +14,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import br.com.envolvedesenvolve.alcoolaqui.MapsActivity;
+import br.com.envolvedesenvolve.alcoolaqui.db.HelperDB;
+import br.com.envolvedesenvolve.alcoolaqui.utils.Global;
 
 public class SendData {
+
+    private static final String TAG = "SendData";
 
     private String userURL = "http://alcoolaqui.atspace.eu/adicionarUser.php";
     private String productURL = "http://alcoolaqui.atspace.eu/adicionarProd.php";
     private String markURL = "http://alcoolaqui.atspace.eu/adicionarMark.php";
+
+    private Context context = MapsActivity.getInstance();
+    private int idProduct;
+    private SharedPreferences prefs;
 
     public void insertDataUser(final String fk_user, final String nome, final String porcent, final String tamanho, final String valor, final String title_local, final String endereco) {
         Log.e("teste", "teste nome: " + nome);
@@ -57,11 +67,20 @@ public class SendData {
         AppController.getInstance().addToRequestQueue(request);
     }
 
-    public void insertDataProduct(final String fk_user, final String nome, final String porcent, final String tamanho, final String valor, final String title_local, final String endereco) {
-        Log.e("teste", "teste nome: " + nome);
+    public String insertDataProduct(final String fk_user, final String nome, final String porcent, final String tamanho, final String valor, final String title_local, final String endereco) {
+//        Log.d("teste", "teste nome: " + nome);
         StringRequest request = new StringRequest(Request.Method.POST, productURL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+//                prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE);
+//                SharedPreferences.Editor ed = prefs.edit();
+
+                Sync sync = new Sync();
+                idProduct = sync.getLastIdProduct(MapsActivity.getInstance().getApplication());
+//                Log.e(TAG, "teste idProduct " + idProduct);
+//                ed.putInt("idProduct", idProduct);
+//                ed.commit();
+
                 MapsActivity maps = MapsActivity.getInstance();
                 maps.addMarker();
             }
@@ -93,10 +112,12 @@ public class SendData {
         };
 
         AppController.getInstance().addToRequestQueue(request);
+
+        return String.valueOf(idProduct);
     }
 
     public void insertDataMark(final String fk_product, final String lat, final String lon) {
-        Log.e("teste", "teste nome: " + lat + ", " + lon);
+//        Log.d("teste", "teste lat e lon: " + lat + ", " + lon);
         StringRequest request = new StringRequest(Request.Method.POST, markURL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

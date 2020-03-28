@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -42,6 +40,7 @@ public class Splash extends AppCompatActivity {
         Sentry.init("https://b5160de4ed1f460c88c9759084ddc223@sentry.io/5175284", new AndroidSentryClientFactory(this));
 
         HelperDB db = HelperDB.getInstance(this);
+        db.deleteListMarks();
 
         Sync sync = new Sync();
         sync.getSyncAll(this);
@@ -52,7 +51,7 @@ public class Splash extends AppCompatActivity {
     }
 
     private void animation() {
-        imageView.setImageResource(R.drawable.bottle);
+        imageView.setImageResource(R.drawable.ic_launcher);
 
         anim = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in); // Create the animation.
         anim.setAnimationListener(new Animation.AnimationListener() {
